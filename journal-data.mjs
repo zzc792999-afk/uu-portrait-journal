@@ -18,7 +18,7 @@ export function journalData(app, sql, limit) {
         path text NOT NULL, digest text NOT NULL, part integer NOT NULL, data bytea NOT NULL,
         saved_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(path,digest,part)
       )`;
-      for(const path of ['public/index.html','public/october.mp4','public/september.mp4']){
+      for(const path of ['public/index.html','public/october.mp4','public/september.mp4','public/august.mp4']){
         const data=await readFile(new URL(path,import.meta.url));
         const digest=createHash('sha256').update(data).digest('hex');
         for(let offset=0;offset<data.length;offset+=524288){
