@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: uu-portrait-journal
+    runtime: static
+    buildCommand: test -s public/index.html
+    staticPublishPath: ./public
