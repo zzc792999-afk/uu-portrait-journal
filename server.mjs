@@ -14,10 +14,6 @@ function initialize(){
       id uuid PRIMARY KEY, nickname varchar(24) NOT NULL, message varchar(280) NOT NULL,
       created_at timestamptz NOT NULL DEFAULT now()
     )`;
-    await sql`CREATE TABLE IF NOT EXISTS uu_daily_moods (
-      visitor uuid NOT NULL, day date NOT NULL, mood smallint NOT NULL CHECK (mood BETWEEN 0 AND 2),
-      PRIMARY KEY(visitor,day)
-    )`;
   })().catch(error=>{setup=undefined;throw error;});
 }
 
@@ -53,16 +49,6 @@ app.post('/api/guestbook',limit,async(req,res)=>{
   await initialize();
   const rows=await sql`INSERT INTO uu_guestbook (id,nickname,message) VALUES (${randomUUID()},${nickname},${message}) RETURNING nickname,message,created_at`;
   res.status(201).json(rows[0]);
-});
-app.post('/api/mood',limit,async(req,res)=>{
-  const {visitor,day,mood}=req.body||{};
-  if(typeof visitor!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(visitor)||
-    typeof day!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(day)||Math.abs(Date.parse(day)-Date.now())>172800000||
-    !Number.isFinite(Date.parse(day))||!Number.isInteger(mood)||mood<0||mood>2) return res.sendStatus(400);
-  await initialize();
-  await sql`INSERT INTO uu_daily_moods (visitor,day,mood) VALUES (${visitor},${day},${mood})
-    ON CONFLICT(visitor,day) DO UPDATE SET mood=EXCLUDED.mood`;
-  res.sendStatus(204);
 });
 app.use((error,req,res,next)=>{
   if(error.status===400||error.status===413) return res.sendStatus(error.status);
