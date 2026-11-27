@@ -4,3 +4,15 @@ services:
     runtime: static
     buildCommand: test -s public/index.html
     staticPublishPath: ./public
+  - type: web
+    name: uu-portrait-journal-api
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: SITE_ORIGIN
+        value: https://uu-portrait-journal.onrender.com
+      - key: DATABASE_URL
+        sync: false

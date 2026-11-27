@@ -1,0 +1,9 @@
+{
+  "name": "uu-portrait-journal-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"start":"node server.mjs"},
+  "dependencies": {"@neondatabase/serverless":"1.0.2","express":"5.1.0"},
+  "engines":{"node":">=22"}
+}
