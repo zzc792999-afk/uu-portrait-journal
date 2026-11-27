@@ -1,4 +1,5 @@
 import express from 'express';
+import {journalData} from './journal-data.mjs';
 import {neon} from '@neondatabase/serverless';
 import {randomUUID} from 'node:crypto';
 
@@ -50,6 +51,7 @@ app.post('/api/guestbook',limit,async(req,res)=>{
   const rows=await sql`INSERT INTO uu_guestbook (id,nickname,message) VALUES (${randomUUID()},${nickname},${message}) RETURNING nickname,message,created_at`;
   res.status(201).json(rows[0]);
 });
+journalData(app,sql,limit);
 app.use((error,req,res,next)=>{
   if(error.status===400||error.status===413) return res.sendStatus(error.status);
   console.error('Request failed',req.path,error.code||'unavailable');
