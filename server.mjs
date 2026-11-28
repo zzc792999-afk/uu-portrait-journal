@@ -26,7 +26,23 @@ app.use('/api',(req,res,next)=>{
   next();
 },express.json({limit:'2kb'}));
 
-app.get('/api/guestbook',async(_,res)=>{
+app.get('/api/guestbook',async(req,res)=>{
+  const {nickname,before}=req.query;
+  if(nickname!==undefined){
+    if(typeof nickname!=='string'||!nickname.trim()||nickname.length>24) return res.sendStatus(400);
+    if(before!==undefined&&(typeof before!=='string'||!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(before))) return res.sendStatus(400);
+    await initialize();
+    const rows=await sql`SELECT id,nickname,message,created_at FROM uu_guestbook
+      WHERE nickname=${nickname.trim()} AND (${before??null}::uuid IS NULL OR (created_at,id) < (
+        SELECT created_at,id FROM uu_guestbook WHERE id=${before??null}::uuid AND nickname=${nickname.trim()}
+      ))
+      ORDER BY created_at DESC,id DESC LIMIT 31`;
+    const page=rows.slice(0,30);
+    return res.json({
+      notes:page.map(({nickname,message,created_at})=>({nickname,message,created_at})),
+      nextCursor:rows.length>page.length?page.at(-1).id:null
+    });
+  }
   await initialize();
   const rows=await sql`SELECT nickname,message,created_at FROM uu_guestbook ORDER BY created_at DESC,id DESC LIMIT 30`;
   res.json(rows);
